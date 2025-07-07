@@ -18,13 +18,16 @@ runs:
   using: "composite"
   steps:   
     - name: Set short sha to env
+      shell: bash
       run: echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
 
-    - name: Log in to Azure 
+    - name: Log in to Azure
+      shell: bash
       run: |
         az login --identity --client-id ${{ inputs.AZURE_CLIENT_ID }}
 
     - name: Log in to Azure Container Registry
+      shell: bash
       run: |
         az acr login --name ${{ inputs.AZURE_ACR_NAME }}
 
@@ -55,11 +58,13 @@ runs:
 
 
     - name: Push Docker image to ACR
+      shell: bash
       run: |
         docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${GITHUB_SHA_SHORT}
 
 
     - name: Deploy to Azure Container App
+      shell: bash
       run: |
         az containerapp update \
           --name ${CONTAINER_APP_NAME} \
