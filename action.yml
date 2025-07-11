@@ -25,9 +25,7 @@ runs:
       shell: bash
       run: |
         echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
-        echo "BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/\//-/g')" >> $GITHUB_ENV
-        echo "SHA_PREFIX=$(echo ${{ github.ref }} | sed 's/\//-/g')" >> $GITHUB_ENV
-
+        echo "BRANCH_NAME=$(echo ${{ github.ref_name }} | sed 's/\//-/g')" >> $GITHUB_ENV
 
     - name: Set sha prefix
       shell: bash
