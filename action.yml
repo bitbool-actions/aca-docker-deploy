@@ -61,8 +61,6 @@ runs:
             type=ref,priority=700,event=tag
             type=semver,priority=600,pattern={{version}}
             type=raw,priority=500,value={{date 'YYYYMMDD_HHMMSS'}}
-# type=sha,priority=400
-
 
     - name: Build and push
       id: docker_build
@@ -72,13 +70,10 @@ runs:
         tags: ${{ steps.meta.outputs.tags }}
         push: false
 
-
     - name: Push Docker image to ACR
       shell: bash
       run: |
         docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
-# docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:BRANCH_NAME #todo
-
 
     - name: Deploy to Azure Container App
       shell: bash
