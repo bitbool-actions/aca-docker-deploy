@@ -31,10 +31,11 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.PREFIX_SHA_WITH_BRANCH }}" == "true" ] ; then 
-          export SHA_PREFIX="${BRANCH_NAME}-"
+          export SHA_PREFIX="${{ env.BRANCH_NAME }}-"
         else
           export SHA_PREFIX=""
         fi
+        echo "SHA_PREFIX=$(echo ${SHA_PREFIX} | sed 's/\//-/g')" >> $GITHUB_ENV
 
     - name: Log in to Azure
       shell: bash
@@ -54,7 +55,7 @@ runs:
         flavor: |
           latest=true
         tags: |
-            type=sha,enable=true,priority=10000,prefix=${SHA_PREFIX},suffix=,format=short    
+            type=sha,enable=true,priority=10000,prefix=${{env.SHA_PREFIX}},suffix=,format=short    
             type=ref,priority=900,event=branch
             type=ref,priority=800,event=pr
             type=ref,priority=700,event=tag
@@ -75,7 +76,7 @@ runs:
     - name: Push Docker image to ACR
       shell: bash
       run: |
-        docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}
+        docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
 # docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:BRANCH_NAME #todo
 
 
@@ -85,4 +86,4 @@ runs:
         az containerapp update \
           --name ${CONTAINER_APP_NAME} \
           --resource-group ${RESOURCE_GROUP} \
-          --image ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}
+          --image ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
