@@ -13,13 +13,30 @@ inputs:
     AZURE_ACR_REPO:
       required: true
       type: string
+    PREFIX_SHA_WITH_BRANCH:
+      required: false
+      default: "false"
+      type: string
       
 runs:
   using: "composite"
   steps:   
     - name: Set short sha to env
       shell: bash
-      run: echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
+      run: |
+        echo "GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c 1-7)" >> $GITHUB_ENV
+        echo "BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/\//-/g')" >> $GITHUB_ENV
+        echo "SHA_PREFIX=$(echo ${{ github.ref }} | sed 's/\//-/g')" >> $GITHUB_ENV
+
+
+    - name: Set sha prefix
+      shell: bash
+      run: |
+        if [ "${{ inputs.PREFIX_SHA_WITH_BRANCH }}" == "true" ] ; then 
+          export SHA_PREFIX="${BRANCH_NAME}-"
+        else
+          export SHA_PREFIX=""
+        fi
 
     - name: Log in to Azure
       shell: bash
@@ -39,13 +56,13 @@ runs:
         flavor: |
           latest=true
         tags: |
-            type=sha,enable=true,priority=10000,prefix=,suffix=,format=short    
+            type=sha,enable=true,priority=10000,prefix=${SHA_PREFIX},suffix=,format=short    
             type=ref,priority=900,event=branch
             type=ref,priority=800,event=pr
             type=ref,priority=700,event=tag
             type=semver,priority=600,pattern={{version}}
             type=raw,priority=500,value={{date 'YYYYMMDD_HHMMSS'}}
-            type=sha,priority=400
+# type=sha,priority=400
 
 
     - name: Build and push
@@ -60,7 +77,8 @@ runs:
     - name: Push Docker image to ACR
       shell: bash
       run: |
-        docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${GITHUB_SHA_SHORT}
+        docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}
+# docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:BRANCH_NAME #todo
 
 
     - name: Deploy to Azure Container App
@@ -69,4 +87,4 @@ runs:
         az containerapp update \
           --name ${CONTAINER_APP_NAME} \
           --resource-group ${RESOURCE_GROUP} \
-          --image ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${GITHUB_SHA_SHORT}
+          --image ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}
