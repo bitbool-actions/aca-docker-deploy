@@ -41,6 +41,13 @@ runs:
         fi
         echo "SHA_PREFIX=$(echo ${SHA_PREFIX} | sed 's/\//-/g')" >> $GITHUB_ENV
 
+    - name: Set primary image
+      shell: bash
+      run: |
+        PRIMARY_IMAGE="${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}"
+        echo "PRIMARY_IMAGE=$PRIMARY_IMAGE" >> "$GITHUB_ENV"
+        echo "Primary image: $PRIMARY_IMAGE"
+
     - name: Log in to Azure
       shell: bash
       run: |
@@ -75,19 +82,19 @@ runs:
       with:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
-        push: false
+        push: true
         sbom: ${{ inputs.DOCKER_SBOM_SCAN }} 
 
-    - name: Push Docker image to ACR
-      shell: bash
-      run: |
-        docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
+    # - name: Push Docker image to ACR
+    #   shell: bash
+    #   run: |
+    #     docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
 
     - name: Docker image sbom scan
       uses: bitbool-actions/docker-sbom-scan@main
       id: sbom_scan
       with:
-        IMAGE: "${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}"
+        IMAGE: "${{ env.PRIMARY_IMAGE }}"
       if: ${{ inputs.DOCKER_SBOM_SCAN == 'true' }} 
 
     - name: Deploy to Azure Container App
@@ -96,4 +103,4 @@ runs:
         az containerapp update \
           --name ${CONTAINER_APP_NAME} \
           --resource-group ${RESOURCE_GROUP} \
-          --image ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
+          --image "${PRIMARY_IMAGE}"
