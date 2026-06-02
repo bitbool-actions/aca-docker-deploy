@@ -17,6 +17,10 @@ inputs:
       required: false
       default: "false"
       type: string
+    DOCKER_SBOM_SCAN:
+      required: false
+      default: "false"
+      type: string
       
 runs:
   using: "composite"
@@ -69,11 +73,19 @@ runs:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
         push: false
+        sbom: ${{ inputs.DOCKER_SBOM_SCAN }} 
 
     - name: Push Docker image to ACR
       shell: bash
       run: |
         docker push ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}
+
+    - name: Docker image sbom scan
+      uses: bitbool-actions/docker-sbom-scan@main
+      id: sbom_scan
+      with:
+        IMAGE: "${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${{env.SHA_PREFIX}}${GITHUB_SHA_SHORT}"
+      if: ${{ inputs.DOCKER_SBOM_SCAN == 'true' }} 
 
     - name: Deploy to Azure Container App
       shell: bash
