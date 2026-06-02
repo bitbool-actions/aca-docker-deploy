@@ -17,7 +17,7 @@ inputs:
       required: false
       default: "false"
       type: string
-    DOCKER_SBOM_SCAN:
+    DOCKER_SECOPS_SCAN:
       required: false
       default: "false"
       type: string
@@ -86,12 +86,12 @@ runs:
       run: |
         docker push "${{ env.PRIMARY_IMAGE }}"
 
-    - name: Docker image sbom scan
-      uses: bitbool-actions/docker-sbom-scan@main
-      id: sbom_scan
+    - name: Docker image secops scan
+      uses: bitbool-actions/docker-secops-scan@main
+      id: secops_scan
       with:
         IMAGE: "${{ env.PRIMARY_IMAGE }}"
-      if: ${{ inputs.DOCKER_SBOM_SCAN == 'true' }} 
+      if: ${{ inputs.DOCKER_SECOPS_SCAN == 'true' }} 
 
     - name: Deploy to Azure Container App
       shell: bash
