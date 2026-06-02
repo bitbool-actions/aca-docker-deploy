@@ -80,6 +80,8 @@ runs:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
         push: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max        
 
     - name: Push Docker image to ACR
       shell: bash
