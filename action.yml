@@ -19,7 +19,7 @@ inputs:
       type: string
     DOCKER_SECOPS_SCAN:
       required: false
-      default: "false"
+      default: "true"
       type: string
       
 runs:
