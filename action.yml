@@ -4,6 +4,9 @@ description: "deploy to azure aca"
 inputs:
     AZURE_CLIENT_ID:
       required: true
+    AZURE_SUBSCRIPTION_ID:
+      required: false
+      default: ""      
     AZURE_ACR_NAME:
       required: true
       type: string
@@ -52,6 +55,12 @@ runs:
       shell: bash
       run: |
         az login --identity --client-id ${{ inputs.AZURE_CLIENT_ID }}
+
+    - name: Select Azure subscription
+      shell: bash
+      run: |
+        az account set --subscription "${{ inputs.AZURE_SUBSCRIPTION_ID }}"
+      if: ${{ inputs.AZURE_SUBSCRIPTION_ID != '' }}
 
     - name: Log in to Azure Container Registry
       shell: bash
