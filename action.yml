@@ -16,6 +16,12 @@ inputs:
     AZURE_ACR_REPO:
       required: true
       type: string
+    CONTAINER_APP_NAME:
+      required: true
+      type: string        
+    RESOURCE_GROUP:
+      required: true
+      type: string           
     PREFIX_SHA_WITH_BRANCH:
       required: false
       default: "false"
@@ -106,6 +112,6 @@ runs:
       shell: bash
       run: |
         az containerapp update \
-          --name ${CONTAINER_APP_NAME} \
-          --resource-group ${RESOURCE_GROUP} \
+          --name  "${{ inputs.CONTAINER_APP_NAME }}" \
+          --resource-group "${{ inputs.RESOURCE_GROUP }}" \
           --image "${PRIMARY_IMAGE}"
