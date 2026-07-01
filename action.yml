@@ -53,7 +53,7 @@ runs:
     - name: Set primary image
       shell: bash
       run: |
-        PRIMARY_IMAGE="${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}"
+        PRIMARY_IMAGE="${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}:${SHA_PREFIX}${GITHUB_SHA_SHORT}"
         echo "PRIMARY_IMAGE=$PRIMARY_IMAGE" >> "$GITHUB_ENV"
         echo "Primary image: $PRIMARY_IMAGE"
 
@@ -77,7 +77,7 @@ runs:
       id: meta
       uses: docker/metadata-action@v5.5.1
       with:
-        images: ${{ inputs.AZURE_ACR_NAME }}.${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}
+        images: ${{ inputs.AZURE_ACR_REGISTRY }}/${{ inputs.AZURE_ACR_REPO }}
         flavor: |
           latest=true
         tags: |
