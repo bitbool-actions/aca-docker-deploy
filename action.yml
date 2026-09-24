@@ -30,7 +30,13 @@ inputs:
       required: false
       default: "false"
       type: string
-      
+    MAVEN_USERNAME:
+      required: false
+      type: string      
+    MAVEN_TOKEN:
+      required: false
+      type: string      
+
 runs:
   using: "composite"
   steps:   
@@ -95,6 +101,9 @@ runs:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
         push: false
+        secrets: |
+          maven_username=${{ inputs.MAVEN_USERNAME }}
+          maven_token=${{ inputs.MAVEN_TOKEN }}
 
     - name: Push Docker image to ACR
       shell: bash
