@@ -31,11 +31,11 @@ inputs:
       default: "false"
       type: string
     MAVEN_USERNAME:
-      required: false
-      type: string      
+      description: "Maven/private package repository username"
+      required: true     
     MAVEN_TOKEN:
-      required: false
-      type: string      
+      description: "Maven/private package repository token"
+      required: true    
 
 runs:
   using: "composite"
@@ -94,16 +94,39 @@ runs:
             type=semver,priority=600,pattern={{version}}
             type=raw,priority=500,value={{date 'YYYYMMDD_HHMMSS'}}
 
+    - name: Check Maven credentials in composite action
+      shell: bash
+      env:
+        MAVEN_USERNAME: ${{ inputs.MAVEN_USERNAME }}
+        MAVEN_TOKEN: ${{ inputs.MAVEN_TOKEN }}
+      run: |
+        if [ -z "$MAVEN_USERNAME" ]; then
+          echo "::error::MAVEN_USERNAME is EMPTY in composite action"
+          exit 1
+        fi
+
+        if [ -z "$MAVEN_TOKEN" ]; then
+          echo "::error::MAVEN_TOKEN is EMPTY in composite action"
+          exit 1
+        fi
+
+        echo "Composite action has Maven credentials"
+        echo "username length=${#MAVEN_USERNAME}"
+        echo "token length=${#MAVEN_TOKEN}"
+
     - name: Build and push
       id: docker_build
       uses: docker/build-push-action@v6
+      env:
+        MAVEN_USERNAME_SECRET: ${{ inputs.MAVEN_USERNAME }}
+        MAVEN_TOKEN_SECRET: ${{ inputs.MAVEN_TOKEN }}      
       with:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
         push: false
         secrets: |
-          maven_username=${{ inputs.MAVEN_USERNAME }}
-          maven_token=${{ inputs.MAVEN_TOKEN }}
+          repo_username=MAVEN_USERNAME_SECRET
+          repo_token=MAVEN_TOKEN_SECRET
 
     - name: Push Docker image to ACR
       shell: bash
