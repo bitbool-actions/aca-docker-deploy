@@ -107,15 +107,16 @@ runs:
       id: docker_build
       uses: docker/build-push-action@v6
       env:
-        MAVEN_USERNAME_SECRET: ${{ inputs.MAVEN_USERNAME }}
-        MAVEN_TOKEN_SECRET: ${{ inputs.MAVEN_TOKEN }}      
+        PACKAGE_REPO_USERNAME: ${{ inputs.MAVEN_USERNAME }}
+        PACKAGE_REPO_TOKEN: ${{ inputs.MAVEN_TOKEN }}
       with:
         context: .
         tags: ${{ steps.meta.outputs.tags }}
         push: false
-        secrets: |
-          repo_username=MAVEN_USERNAME_SECRET
-          repo_token=MAVEN_TOKEN_SECRET
+        load: true
+        secret-envs: |
+          repo_username=PACKAGE_REPO_USERNAME
+          repo_token=PACKAGE_REPO_TOKEN
 
     - name: Push Docker image to ACR
       shell: bash
