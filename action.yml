@@ -94,25 +94,14 @@ runs:
             type=semver,priority=600,pattern={{version}}
             type=raw,priority=500,value={{date 'YYYYMMDD_HHMMSS'}}
 
-    - name: Check Maven credentials in composite action
+    - name: Debug Maven secret lengths
       shell: bash
       env:
         MAVEN_USERNAME: ${{ inputs.MAVEN_USERNAME }}
         MAVEN_TOKEN: ${{ inputs.MAVEN_TOKEN }}
       run: |
-        if [ -z "$MAVEN_USERNAME" ]; then
-          echo "::error::MAVEN_USERNAME is EMPTY in composite action"
-          exit 1
-        fi
-
-        if [ -z "$MAVEN_TOKEN" ]; then
-          echo "::error::MAVEN_TOKEN is EMPTY in composite action"
-          exit 1
-        fi
-
-        echo "Composite action has Maven credentials"
-        echo "username length=${#MAVEN_USERNAME}"
-        echo "token length=${#MAVEN_TOKEN}"
+        echo "outer username length=${#MAVEN_USERNAME}"
+        echo "outer token length=${#MAVEN_TOKEN}"
 
     - name: Build and push
       id: docker_build
